@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Selector</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            user-select: none; /* Prevent text selection */
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            overflow-x: auto; /* Allow horizontal scrolling if needed */
+        }
+        .game-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 683px); /* Two columns with 683px width */
+            gap: 30px;
+            margin: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 683px; /* Set width to match the grid column width */
+            user-select: none; /* Prevent text selection */
+        }
+        .game-button {
+            padding: 10px 20px;
+            background-color: #ff6347; /* More vibrant color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .game-button:hover {
+            background-color: #ff4500; /* Hover effect with more vibrant color */
+        }
+        .game-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            allowfullscreen: true;
+        }
+        .thumbnail {
+            width: 683px; /* Set width */
+            height: 384px; /* Set height */
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            user-select: none; /* Prevent text and image selection */
+        }
+        .thumbnail img {
+            width: 100%; /* Adjust width to fit the container */
+            height: 100%; /* Adjust height to fit the container */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+            user-select: none; /* Prevent image selection */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-selection">
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/merge-dig_16x9/20240503021811/merge-dig_16x9-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Merge Dig Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/merge-dig')">Merge Dig</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/man-runner-2048_16x9/20240522031552/man-runner-2048_16x9-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Man Runner 2048 Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/man-runner-2048')">Man Runner 2048</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/games/cubes-2048-io/cover_16x9-1693298929425.png?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Cubes 2048 IO Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/cubes-2048-io')">Cubes 2048 IO</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/foono-online-multiplayer-card-game_16x9/20231002101605/foono-online-multiplayer-card-game_16x9-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Foono Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/foono-online-multiplayer-card-game')">Foono</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/basket-random_16x9/20240617090207/basket-random_16x9-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Basket Random Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/basket-random')">Basket Random</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/time-shooter/20221206150331/time-shooter-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Time Shooter Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/time-shooter')">Time Shooter</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/games/time-shooter-2/cover-1655215853507.png?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Time Shooter 2 Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/time-shooter-2')">Time Shooter 2</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/space-waves_16x9/20240723090521/space-waves_16x9-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=461" alt="Space Waves Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/space-waves')">Space Waves</button>
+            </div>
+            <div class="game-item">
+                <div class="thumbnail">
+                    <img src="https://images.crazygames.com/noob-snake-2048/20230724100442/noob-snake-2048-cover?auto=format%2Ccompress&q=75&cs=strip&ch=DPR&w=683" alt="Noob Snake 2048 Thumbnail">
+                </div>
+                <button class="game-button" onclick="showGame('https://www.crazygames.com/embed/noob-snake-2048')">Noob Snake 2048</button>
+            </div>
+        </div>
+        <div class="game-container">
+            <iframe id="gameFrame" allow="fullscreen"></iframe>
+        </div>
+    </div>
+    <script>
+        function showGame(url) {
+            document.getElementById('gameFrame').src = url;
+            document.getElementById('gameFrame').style.display = 'block';
+            document.querySelector('.game-selection').style.display = 'none';
+            document.querySelector('.game-container').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
