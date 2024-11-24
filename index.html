@@ -106,8 +106,6 @@
     <button onclick="fetchThumbnail()">View Thumbnail</button>
     <span class="button-space"></span>
     <button onclick="resetThumbnail()">Reset</button>
-    <span class="button-space"></span>
-    <button id="newTabButton" style="display: none;" onclick="openInNewTab()">New Tab</button>
     <div id="loadingMessage" class="loading" role="status">Loading thumbnail...</div>
     <p id="errorMessage" class="error" aria-live="polite"></p>
     <img id="thumbnailImage" alt="YouTube Thumbnail" draggable="false">
@@ -125,12 +123,10 @@
         const loadingMessage = document.getElementById('loadingMessage');
         const thumbnailImage = document.getElementById('thumbnailImage');
         const errorMessage = document.getElementById('errorMessage');
-        const newTabButton = document.getElementById('newTabButton');
 
         // Reset UI elements
         errorMessage.textContent = '';
         thumbnailImage.style.display = 'none';
-        newTabButton.style.display = 'none';
 
         if (!videoId) {
             errorMessage.textContent = "Please enter a valid YouTube URL.";
@@ -149,8 +145,6 @@
 
             thumbnailImage.src = thumbnailUrl;
             thumbnailImage.style.display = 'block';
-            newTabButton.style.display = 'inline-block';
-            newTabButton.setAttribute('data-url', thumbnailUrl);
         } catch {
             errorMessage.textContent = "Unable to fetch the thumbnail. Please try again.";
         } finally {
@@ -176,18 +170,9 @@
             document.getElementById('thumbnailImage').style.display = 'none';
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('errorMessage').textContent = '';
-            document.getElementById('newTabButton').style.display = 'none';
 
             container.style.animation = 'fadeIn 0.5s ease-in-out';
         }, 500);
-    }
-
-    function openInNewTab() {
-        const newTabButton = document.getElementById('newTabButton');
-        const thumbnailUrl = newTabButton.getAttribute('data-url');
-        
-        // Open the thumbnail in a new tab
-        window.open(thumbnailUrl, '_blank');
     }
 </script>
 
