@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Thumbnail Viewer</title>
     <style>
-        /* Basic Styles */
+        /* Modern, Dark-Themed Styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -15,7 +15,6 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            padding: 0;
         }
         .container {
             text-align: center;
@@ -25,10 +24,24 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
             width: 80%;
             max-width: 500px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.95); }
         }
         h1 {
             color: #FF0000;
-            user-select: none; /* Prevent text highlight */
+            user-select: none;
+            animation: textGlow 1.5s infinite alternate;
+        }
+        @keyframes textGlow {
+            from { text-shadow: 0 0 5px #FF0000; }
+            to { text-shadow: 0 0 20px #FF3333; }
         }
         input[type="text"] {
             width: calc(100% - 20px);
@@ -38,10 +51,7 @@
             background-color: #2c2c2c;
             color: white;
             border: none;
-            user-select: none; /* Prevent placeholder text highlight */
-        }
-        input::placeholder {
-            user-select: none; /* Prevent highlighting of placeholder */
+            user-select: none;
         }
         button {
             background-color: #FF0000;
@@ -52,85 +62,132 @@
             border: none;
             color: white;
             margin: 5px;
-            user-select: none; /* Prevent button text highlight */
+            user-select: none;
+            transition: transform 0.2s, background-color 0.3s;
         }
-        button:hover { background-color: #CC0000; }
+        button:hover {
+            background-color: #CC0000;
+            transform: scale(1.05);
+        }
+        button:focus {
+            outline: 2px solid #FF3333;
+        }
         .button-space {
-            user-select: none; /* Prevent space highlight */
             display: inline-block;
-            width: 10px; /* Space between buttons */
+            width: 10px;
         }
         img {
             margin-top: 20px;
             max-width: 100%;
             border-radius: 10px;
             display: none;
-            user-drag: none; /* Prevent dragging the image */
-            -webkit-user-drag: none; /* For Safari */
+            animation: fadeIn 0.5s ease-in-out;
+            user-drag: none;
+            -webkit-user-drag: none;
+            transition: opacity 0.5s ease-in-out;
         }
         .loading {
             display: none;
-            color: #ff0000;
+            color: #FF0000;
             font-style: italic;
+            margin-top: 10px;
+        }
+        .error {
+            color: #FF0000;
             margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="container">
     <h1>YouTube Thumbnail Viewer</h1>
     <input type="text" id="youtubeUrl" placeholder="Paste YouTube link here..." aria-label="Enter YouTube URL">
     <button onclick="fetchThumbnail()">View Thumbnail</button>
-    <span class="button-space"></span> <!-- Space between buttons -->
+    <span class="button-space"></span>
     <button onclick="resetThumbnail()">Reset</button>
-    <div id="loadingMessage" class="loading">Loading thumbnail...</div>
-    <img id="thumbnailImage" alt="YouTube Thumbnail" draggable="false"> <!-- Prevent image from being dragged -->
+    <span class="button-space"></span>
+    <button id="newTabButton" style="display: none;" onclick="openInNewTab()">New Tab</button>
+    <div id="loadingMessage" class="loading" role="status">Loading thumbnail...</div>
+    <p id="errorMessage" class="error" aria-live="polite"></p>
+    <img id="thumbnailImage" alt="YouTube Thumbnail" draggable="false">
 </div>
 
 <script>
     function extractVideoId(url) {
-        const videoIdMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?]+)/);
+        const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
         return videoIdMatch ? videoIdMatch[1] : null;
     }
 
-    function fetchThumbnail() {
-        const url = document.getElementById('youtubeUrl').value;
+    async function fetchThumbnail() {
+        const url = document.getElementById('youtubeUrl').value.trim();
         const videoId = extractVideoId(url);
         const loadingMessage = document.getElementById('loadingMessage');
         const thumbnailImage = document.getElementById('thumbnailImage');
+        const errorMessage = document.getElementById('errorMessage');
+        const newTabButton = document.getElementById('newTabButton');
 
-        if (videoId) {
-            loadingMessage.style.display = 'block'; // Show loading message
-            thumbnailImage.style.display = 'none'; // Hide image initially
+        // Reset UI elements
+        errorMessage.textContent = '';
+        thumbnailImage.style.display = 'none';
+        newTabButton.style.display = 'none';
 
-            // Set the max resolution URL
-            let thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-            
-            // Check if image loads successfully
-            thumbnailImage.onload = function () {
-                loadingMessage.style.display = 'none';
-                thumbnailImage.style.display = 'block';
-            };
+        if (!videoId) {
+            errorMessage.textContent = "Please enter a valid YouTube URL.";
+            return;
+        }
 
-            // Error handling for when the max resolution image isn’t available
-            thumbnailImage.onerror = function () {
-                thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`; // fallback to HQ
-                thumbnailImage.src = thumbnailUrl;
-                loadingMessage.style.display = 'none';
-            };
+        loadingMessage.style.display = 'block'; // Show loading message
 
-            // Set the image source to trigger load or error events
+        try {
+            const maxResThumbnail = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+            const isMaxResAvailable = await imageExists(maxResThumbnail);
+
+            const thumbnailUrl = isMaxResAvailable
+                ? maxResThumbnail
+                : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
             thumbnailImage.src = thumbnailUrl;
-        } else {
-            alert("Please enter a valid YouTube URL.");
+            thumbnailImage.style.display = 'block';
+            newTabButton.style.display = 'inline-block';
+            newTabButton.setAttribute('data-url', thumbnailUrl);
+        } catch {
+            errorMessage.textContent = "Unable to fetch the thumbnail. Please try again.";
+        } finally {
+            loadingMessage.style.display = 'none'; // Hide loading message
         }
     }
 
+    async function imageExists(url) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+        });
+    }
+
     function resetThumbnail() {
-        document.getElementById('youtubeUrl').value = '';
-        document.getElementById('thumbnailImage').style.display = 'none';
-        document.getElementById('loadingMessage').style.display = 'none';
+        const container = document.getElementById('container');
+        container.style.animation = 'fadeOut 0.5s ease-in-out';
+
+        setTimeout(() => {
+            document.getElementById('youtubeUrl').value = '';
+            document.getElementById('thumbnailImage').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').textContent = '';
+            document.getElementById('newTabButton').style.display = 'none';
+
+            container.style.animation = 'fadeIn 0.5s ease-in-out';
+        }, 500);
+    }
+
+    function openInNewTab() {
+        const newTabButton = document.getElementById('newTabButton');
+        const thumbnailUrl = newTabButton.getAttribute('data-url');
+        
+        // Open the thumbnail in a new tab
+        window.open(thumbnailUrl, '_blank');
     }
 </script>
 
