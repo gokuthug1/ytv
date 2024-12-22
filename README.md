@@ -1,4 +1,4 @@
-This is YouTube Thumbnail Viewer.
+This is YouTube Thumbnail Viewer. (YTV)
 
 You can view tumbnails of YouTube Videos as explained in the description.
 
