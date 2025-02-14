@@ -113,8 +113,8 @@
 
 <script>
     function extractVideoId(input) {
-        // Check if input is a full YouTube URL or just a video ID
-        const videoIdMatch = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+        // Check if input is a full YouTube URL (including mobile, desktop, or shortened)
+        const videoIdMatch = input.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|(?:v|e(?:mbed)?)\/))([\w-]{11})/);
         return videoIdMatch ? videoIdMatch[1] : null;
     }
 
