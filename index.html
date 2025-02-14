@@ -114,8 +114,8 @@
 <script>
     function extractVideoId(input) {
         // Check if input is a full YouTube URL or just a video ID
-        const videoIdMatch = input.match(/^(?:[\w-]{11}|(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11}))/);
-        return videoIdMatch ? videoIdMatch[1] || videoIdMatch[0] : null;
+        const videoIdMatch = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+        return videoIdMatch ? videoIdMatch[1] : null;
     }
 
     async function fetchThumbnail() {
