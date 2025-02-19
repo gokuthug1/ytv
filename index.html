@@ -113,9 +113,14 @@
 
 <script>
     function extractVideoId(input) {
-        // Check if input is a full YouTube URL (including mobile, desktop, or shortened)
-        const videoIdMatch = input.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|(?:v|e(?:mbed)?)\/))([\w-]{11})/);
-        return videoIdMatch ? videoIdMatch[1] : null;
+        // If input is already an 11-character video ID, return it directly
+        if (/^[\w-]{11}$/.test(input)) {
+            return input;
+        }
+
+        // Regex to extract video ID from various YouTube URL formats
+        const match = input.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:.*[?&]v=|embed\/|v\/|shorts\/|live\/))([\w-]{11})/);
+        return match ? match[1] : null;
     }
 
     async function fetchThumbnail() {
