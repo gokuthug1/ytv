@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Thumbnail Viewer</title>
     <style>
+        /* --- CSS Variables --- */
         :root {
             --primary-bg-color: #121212;
             --secondary-bg-color: #1c1c1c;
@@ -18,9 +19,10 @@
             --disabled-btn-bg-color: #555555;
             --border-radius-small: 5px;
             --border-radius-medium: 10px;
-            --font-family: Arial, sans-serif;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
+        /* --- General Layout & Typography --- */
         body {
             font-family: var(--font-family);
             background-color: var(--primary-bg-color);
@@ -28,12 +30,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Use min-height for scrollability on small screens */
+            min-height: 100vh;
             margin: 0;
-            padding: 20px 0; /* Add some padding for smaller viewports */
+            padding: 20px 0;
             box-sizing: border-box;
         }
 
+        h1 {
+            color: var(--accent-color);
+            user-select: none;
+            animation: textGlow 1.5s infinite alternate;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* --- Container & Animations --- */
         .container {
             text-align: center;
             background-color: var(--secondary-bg-color);
@@ -50,17 +61,23 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        h1 {
-            color: var(--accent-color);
-            user-select: none;
-            animation: textGlow 1.5s infinite alternate;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-
         @keyframes textGlow {
             from { text-shadow: 0 0 5px var(--accent-color); }
             to { text-shadow: 0 0 20px var(--accent-focus-outline-color); }
+        }
+        
+        @keyframes fadeInImage {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- Form Elements --- */
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #cccccc;
         }
 
         input[type="text"], select {
@@ -70,28 +87,24 @@
             border-radius: var(--border-radius-small);
             background-color: var(--tertiary-bg-color);
             color: var(--text-color);
-            border: 1px solid var(--tertiary-bg-color); /* Subtle border */
+            border: 1px solid var(--tertiary-bg-color);
             font-size: 16px;
             box-sizing: border-box;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
+        
         input[type="text"]::placeholder {
             color: var(--placeholder-text-color);
         }
-        input[type="text"]:focus, select:focus {
+
+        input[type="text"]:focus, 
+        select:focus {
             outline: none;
             border-color: var(--accent-focus-outline-color);
             box-shadow: 0 0 5px var(--accent-focus-outline-color);
         }
 
-        label {
-            display: block;
-            text-align: left;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            color: #cccccc;
-        }
-
+        /* --- Buttons --- */
         .button-group {
             margin-top: 10px;
         }
@@ -114,7 +127,7 @@
             transform: scale(1.05);
         }
 
-        button:focus {
+        button:focus-visible { /* Modern pseudo-class for keyboard focus */
             outline: 2px solid var(--accent-focus-outline-color);
             outline-offset: 2px;
         }
@@ -124,27 +137,24 @@
             cursor: not-allowed;
             transform: none;
         }
+        
         button:disabled:hover {
-            background-color: var(--disabled-btn-bg-color); /* Keep same color on hover when disabled */
+            background-color: var(--disabled-btn-bg-color);
         }
 
-        img#thumbnailImage {
+        /* --- UI Components (Image, Messages) --- */
+        #thumbnailImage {
             margin-top: 25px;
             max-width: 100%;
             border-radius: var(--border-radius-medium);
-            display: none; /* Initially hidden */
-            animation: fadeInImage 0.5s ease-in-out; /* Animation for when it appears */
-            transition: opacity 0.5s ease-in-out; /* For smooth hide on reset */
-            border: 1px solid var(--tertiary-bg-color); /* Subtle border for the image */
+            display: none;
+            animation: fadeInImage 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
+            border: 1px solid var(--tertiary-bg-color);
         }
         
-        @keyframes fadeInImage { /* Renamed to avoid conflict with general fadeIn */
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         .loading {
-            display: none; /* Initially hidden */
+            display: none;
             color: var(--accent-color);
             font-style: italic;
             margin-top: 15px;
@@ -153,66 +163,97 @@
         .error {
             color: var(--error-color);
             margin-top: 15px;
-            min-height: 1.2em; /* Prevent layout shift when message appears/disappears */
+            min-height: 1.2em;
         }
     </style>
 </head>
 <body>
 
-<div class="container" id="container">
+<div class="container">
     <h1>YouTube Thumbnail Viewer</h1>
     
-    <label for="youtubeUrl">YouTube URL or Video ID:</label>
-    <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ or dQw4w9WgXcQ" aria-label="Enter YouTube URL or Video ID">
-    
-    <label for="qualitySelector">Select Thumbnail Quality:</label>
-    <select id="qualitySelector" aria-label="Select thumbnail quality">
-        <option value="auto">Auto (Best Available)</option>
-        <option value="maxresdefault">Maximum Resolution (maxresdefault.jpg)</option>
-        <option value="sddefault">Standard Definition (sddefault.jpg)</option>
-        <option value="hqdefault">High Quality (hqdefault.jpg)</option>
-        <option value="mqdefault">Medium Quality (mqdefault.jpg)</option>
-        <option value="default">Default (default.jpg)</option>
-    </select>
+    <form id="thumbnailForm">
+        <label for="youtubeUrl">YouTube URL or Video ID:</label>
+        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" aria-label="Enter YouTube URL or Video ID" required>
+        
+        <label for="qualitySelector">Select Thumbnail Quality:</label>
+        <select id="qualitySelector" aria-label="Select thumbnail quality">
+            <option value="auto">Auto (Best Available)</option>
+            <option value="maxresdefault">Maximum Resolution (maxresdefault.jpg)</option>
+            <option value="sddefault">Standard Definition (sddefault.jpg)</option>
+            <option value="hqdefault">High Quality (hqdefault.jpg)</option>
+            <option value="mqdefault">Medium Quality (mqdefault.jpg)</option>
+            <option value="default">Default (default.jpg)</option>
+        </select>
 
-    <div class="button-group">
-        <button onclick="fetchThumbnail()">View Thumbnail</button>
-        <button onclick="resetApp()">Reset</button>
-        <button id="downloadButton" onclick="downloadThumbnail()" disabled>Download Thumbnail</button>
-    </div>
+        <div class="button-group">
+            <button type="submit" id="viewButton">View Thumbnail</button>
+            <button type="button" id="resetButton">Reset</button>
+            <button type="button" id="downloadButton" disabled>Download Thumbnail</button>
+        </div>
+    </form>
     
     <div id="loadingMessage" class="loading" role="status">Loading thumbnail...</div>
     <p id="errorMessage" class="error" aria-live="polite"></p>
     <img id="thumbnailImage" alt="YouTube Thumbnail" draggable="false">
 </div>
 
-<script>
-    const youtubeUrlInput = document.getElementById('youtubeUrl');
-    const qualitySelector = document.getElementById('qualitySelector');
-    const loadingMessage = document.getElementById('loadingMessage');
-    const thumbnailImage = document.getElementById('thumbnailImage');
-    const errorMessage = document.getElementById('errorMessage');
-    const downloadButton = document.getElementById('downloadButton');
+<script defer>
+    'use strict';
 
-    // Event listener for "Enter" key on input field
-    youtubeUrlInput.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            fetchThumbnail();
-        }
-    });
+    // Group all DOM element references in a single object for better organization.
+    const ui = {
+        form: document.getElementById('thumbnailForm'),
+        urlInput: document.getElementById('youtubeUrl'),
+        qualitySelector: document.getElementById('qualitySelector'),
+        viewButton: document.getElementById('viewButton'),
+        resetButton: document.getElementById('resetButton'),
+        downloadButton: document.getElementById('downloadButton'),
+        loadingMessage: document.getElementById('loadingMessage'),
+        thumbnailImage: document.getElementById('thumbnailImage'),
+        errorMessage: document.getElementById('errorMessage'),
+    };
+    
+    const THUMBNAIL_BASE_URL = 'https://i.ytimg.com/vi/';
 
+    /**
+     * Initializes the application by setting up event listeners.
+     */
+    function initialize() {
+        ui.form.addEventListener('submit', handleFormSubmit);
+        ui.resetButton.addEventListener('click', resetApp);
+        ui.downloadButton.addEventListener('click', downloadThumbnail);
+    }
+
+    /**
+     * Handles the form submission, preventing default behavior and fetching the thumbnail.
+     * @param {Event} event - The form submission event.
+     */
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        fetchThumbnail();
+    }
+
+    /**
+     * Extracts a YouTube video ID from various URL formats or returns the input if it's already an ID.
+     * @param {string} input - The YouTube URL or video ID string.
+     * @returns {string|null} The 11-character video ID or null if not found.
+     */
     function extractVideoId(input) {
         if (/^[\w-]{11}$/.test(input)) {
-            return input; // Already a video ID
+            return input; // Already a valid video ID
         }
-        // Regex for various YouTube URL formats (watch, short, embed, youtu.be, live)
         const regex = /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/;
         const match = input.match(regex);
         return match ? match[1] : null;
     }
 
-    async function imageExists(url) {
+    /**
+     * Checks if an image at a given URL exists and is loadable.
+     * @param {string} url - The URL of the image to check.
+     * @returns {Promise<boolean>} A promise that resolves to true if the image exists, false otherwise.
+     */
+    function imageExists(url) {
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => resolve(true);
@@ -220,151 +261,172 @@
             img.src = url;
         });
     }
+    
+    /**
+     * Sets the UI to a loading state.
+     * @param {boolean} isLoading - True to show loading, false to hide.
+     */
+    function setLoadingState(isLoading) {
+        ui.loadingMessage.style.display = isLoading ? 'block' : 'none';
+        ui.viewButton.disabled = isLoading;
+        ui.resetButton.disabled = isLoading;
+    }
+    
+    /**
+     * Resets the thumbnail image display.
+     */
+    function resetImage() {
+        ui.thumbnailImage.style.display = 'none';
+        ui.thumbnailImage.removeAttribute('src');
+        ui.downloadButton.disabled = true;
+    }
 
+    /**
+     * Main function to fetch and display the YouTube thumbnail.
+     */
     async function fetchThumbnail() {
-        const videoUrlOrId = youtubeUrlInput.value.trim();
-        const videoId = extractVideoId(videoUrlOrId);
-        const selectedQualityValue = qualitySelector.value;
+        // Reset UI state before starting
+        setLoadingState(true);
+        ui.errorMessage.textContent = '';
+        resetImage();
 
-        // Reset UI elements before fetching
-        errorMessage.textContent = '';
-        thumbnailImage.style.display = 'none';
-        thumbnailImage.removeAttribute('src'); // Clear previous image source
-        downloadButton.disabled = true;
+        const videoUrlOrId = ui.urlInput.value.trim();
+        const videoId = extractVideoId(videoUrlOrId);
+        const selectedQuality = ui.qualitySelector.value;
 
         if (!videoId) {
-            errorMessage.textContent = "Please enter a valid YouTube URL or Video ID.";
-            youtubeUrlInput.focus();
+            ui.errorMessage.textContent = "Please enter a valid YouTube URL or Video ID.";
+            setLoadingState(false);
+            ui.urlInput.focus();
             return;
         }
 
-        loadingMessage.style.display = 'block';
         let finalThumbnailUrl = '';
-        let qualityForDisplay = selectedQualityValue; // For error messages or filename
-
+        
         try {
-            if (selectedQualityValue === "auto") {
-                const maxResUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-                if (await imageExists(maxResUrl)) {
-                    finalThumbnailUrl = maxResUrl;
-                    qualityForDisplay = 'maxresdefault';
-                } else {
-                    finalThumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                    qualityForDisplay = 'hqdefault'; // Fallback quality for auto
-                }
+            if (selectedQuality === "auto") {
+                const maxResUrl = `${THUMBNAIL_BASE_URL}${videoId}/maxresdefault.jpg`;
+                finalThumbnailUrl = (await imageExists(maxResUrl)) 
+                    ? maxResUrl 
+                    : `${THUMBNAIL_BASE_URL}${videoId}/hqdefault.jpg`;
             } else {
-                const specificUrl = `https://i.ytimg.com/vi/${videoId}/${selectedQualityValue}.jpg`;
-                // For maxresdefault and sddefault, explicitly check if they exist
-                if (selectedQualityValue === "maxresdefault" || selectedQualityValue === "sddefault") {
-                    if (!(await imageExists(specificUrl))) {
-                        errorMessage.textContent = `Thumbnail quality '${selectedQualityValue}' is not available for this video. Try 'Auto' or another quality.`;
-                        loadingMessage.style.display = 'none';
-                        return;
-                    }
+                const specificUrl = `${THUMBNAIL_BASE_URL}${videoId}/${selectedQuality}.jpg`;
+                if (["maxresdefault", "sddefault"].includes(selectedQuality) && !(await imageExists(specificUrl))) {
+                    ui.errorMessage.textContent = `Thumbnail quality '${selectedQuality}' is not available. Try 'Auto'.`;
+                    setLoadingState(false);
+                    return;
                 }
                 finalThumbnailUrl = specificUrl;
-                // qualityForDisplay is already selectedQualityValue
             }
 
-            thumbnailImage.onload = () => {
-                thumbnailImage.style.display = 'block';
-                thumbnailImage.style.opacity = '1'; // For fadeIn effect
-                loadingMessage.style.display = 'none';
-                errorMessage.textContent = '';
-                downloadButton.disabled = false; // Enable download
+            ui.thumbnailImage.onload = () => {
+                ui.thumbnailImage.style.display = 'block';
+                ui.downloadButton.disabled = false;
+                setLoadingState(false);
             };
 
-            thumbnailImage.onerror = () => {
-                errorMessage.textContent = `Failed to load thumbnail for '${qualityForDisplay}'. The image might be corrupt, restricted, or the URL is incorrect.`;
-                loadingMessage.style.display = 'none';
-                thumbnailImage.style.display = 'none';
-                downloadButton.disabled = true;
+            ui.thumbnailImage.onerror = () => {
+                ui.errorMessage.textContent = `Failed to load thumbnail. The image may be restricted or unavailable.`;
+                setLoadingState(false);
             };
             
-            // Set crossOrigin to anonymous for potential canvas operations or to ensure fetch works for download
-            thumbnailImage.crossOrigin = "anonymous";
-            thumbnailImage.src = finalThumbnailUrl;
-
+            ui.thumbnailImage.src = finalThumbnailUrl;
         } catch (error) {
             console.error("Error in fetchThumbnail:", error);
-            errorMessage.textContent = "An unexpected error occurred while fetching the thumbnail.";
-            loadingMessage.style.display = 'none';
-            downloadButton.disabled = true;
+            ui.errorMessage.textContent = "An unexpected error occurred while fetching the thumbnail.";
+            setLoadingState(false);
         }
     }
 
+    /**
+     * Generates a descriptive filename for the thumbnail.
+     * @param {string} videoId - The YouTube video ID.
+     * @param {string} imageSrc - The source URL of the loaded image.
+     * @returns {string} The generated filename (e.g., "dQw4w9WgXcQ_maxresdefault.jpg").
+     */
     function getFilenameForThumbnail(videoId, imageSrc) {
         let qualityKey = 'thumbnail';
-        // Prefer explicitly selected quality if not 'auto'
-        if (qualitySelector.value !== 'auto') {
-            qualityKey = qualitySelector.value;
-        } else { // Infer from actual loaded image source for 'auto' mode
-            if (imageSrc.includes('maxresdefault')) qualityKey = 'maxresdefault';
-            else if (imageSrc.includes('sddefault')) qualityKey = 'sddefault';
-            else if (imageSrc.includes('hqdefault')) qualityKey = 'hqdefault';
-            else if (imageSrc.includes('mqdefault')) qualityKey = 'mqdefault';
-            else if (imageSrc.includes('default')) qualityKey = 'default';
+        const qualityMatch = imageSrc.match(/\/(\w+default)\.jpg$/);
+        if (qualityMatch) {
+            qualityKey = qualityMatch[1];
         }
         return `${videoId}_${qualityKey}.jpg`;
     }
 
+    /**
+     * Downloads the currently displayed thumbnail image.
+     */
     async function downloadThumbnail() {
-        const videoUrlOrId = youtubeUrlInput.value.trim();
-        const videoId = extractVideoId(videoUrlOrId);
+        const videoId = extractVideoId(ui.urlInput.value.trim());
 
-        if (thumbnailImage.style.display !== 'block' || !thumbnailImage.src || thumbnailImage.src.startsWith('data:')) {
-            errorMessage.textContent = "No thumbnail displayed to download.";
+        if (!ui.thumbnailImage.src || ui.thumbnailImage.style.display !== 'block') {
+            ui.errorMessage.textContent = "No thumbnail is displayed to download.";
             return;
         }
-        if (!videoId) { // Should ideally not happen if an image is displayed
-            errorMessage.textContent = "Cannot determine Video ID for filename.";
+        if (!videoId) {
+            ui.errorMessage.textContent = "Cannot determine Video ID for filename.";
             return;
         }
+        
+        const originalButtonText = ui.downloadButton.textContent;
+        ui.downloadButton.disabled = true;
+        ui.downloadButton.textContent = 'Downloading...';
 
         try {
-            const response = await fetch(thumbnailImage.src); // i.ytimg.com allows CORS
+            const response = await fetch(ui.thumbnailImage.src, { mode: 'cors' });
             if (!response.ok) {
-                throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+                throw new Error(`Network response was not ok: ${response.statusText}`);
             }
             const blob = await response.blob();
             const objectUrl = window.URL.createObjectURL(blob);
             
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = objectUrl;
-            a.download = getFilenameForThumbnail(videoId, thumbnailImage.src);
+            const anchor = document.createElement('a');
+            anchor.style.display = 'none';
+            anchor.href = objectUrl;
+            anchor.download = getFilenameForThumbnail(videoId, ui.thumbnailImage.src);
             
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
             window.URL.revokeObjectURL(objectUrl);
-            errorMessage.textContent = ''; // Clear any previous messages
+            ui.errorMessage.textContent = '';
         } catch (e) {
             console.error("Download error:", e);
-            errorMessage.textContent = "Could not download the thumbnail. This might be due to network issues, browser restrictions, or CORS issues if the image server changed its policy.";
+            ui.errorMessage.textContent = "Could not download the thumbnail. This might be a network or CORS issue.";
+        } finally {
+            ui.downloadButton.disabled = false;
+            ui.downloadButton.textContent = originalButtonText;
         }
     }
-
+    
+    /**
+     * Fades out the image (if visible) before resetting the application state.
+     */
     function resetApp() {
-        if (thumbnailImage.style.display === 'block') {
-            thumbnailImage.style.opacity = '0'; // Trigger fade-out
+        if (ui.thumbnailImage.style.display === 'block') {
+            ui.thumbnailImage.style.opacity = '0';
             setTimeout(performResetActions, 500); // Match CSS transition duration
         } else {
             performResetActions();
         }
     }
-
+    
+    /**
+     * Performs the actual reset of all UI elements to their initial state.
+     */
     function performResetActions() {
-        youtubeUrlInput.value = '';
-        qualitySelector.value = 'auto'; // Reset selector to default
-        thumbnailImage.style.display = 'none';
-        thumbnailImage.style.opacity = '1'; // Reset opacity for next fadeIn
-        thumbnailImage.removeAttribute('src');
-        loadingMessage.style.display = 'none';
-        errorMessage.textContent = '';
-        downloadButton.disabled = true;
-        youtubeUrlInput.focus();
+        ui.form.reset(); // Resets input and select fields
+        resetImage();
+        ui.thumbnailImage.style.opacity = '1';
+        ui.loadingMessage.style.display = 'none';
+        ui.errorMessage.textContent = '';
+        setLoadingState(false);
+        ui.urlInput.focus();
     }
+    
+    // Start the application
+    initialize();
+
 </script>
 
 </body>
