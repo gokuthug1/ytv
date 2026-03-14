@@ -3,431 +3,1079 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Thumbnail Viewer</title>
+    <title>ULTIMATE Texture Generator 3D - PRO</title>
+    <!-- Import Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Import OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
     <style>
-        /* --- CSS Variables --- */
         :root {
-            --primary-bg-color: #121212;
-            --secondary-bg-color: #1c1c1c;
-            --tertiary-bg-color: #2c2c2c;
-            --text-color: #ffffff;
-            --placeholder-text-color: #bbbbbb;
-            --accent-color: #FF0000;
-            --accent-hover-color: #CC0000;
-            --accent-focus-outline-color: #FF3333;
-            --error-color: #FF0000;
-            --disabled-btn-bg-color: #555555;
-            --border-radius-small: 5px;
-            --border-radius-medium: 10px;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text: #ecf0f1;
+            --input-bg: #404040;
         }
 
-        /* --- General Layout & Typography --- */
         body {
-            font-family: var(--font-family);
-            background-color: var(--primary-bg-color);
-            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
-            box-sizing: border-box;
         }
 
         h1 {
-            color: var(--accent-color);
-            user-select: none;
-            animation: textGlow 1.5s infinite alternate;
-            margin-top: 0;
+            color: var(--primary);
             margin-bottom: 20px;
-        }
-
-        /* --- Container & Animations --- */
-        .container {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             text-align: center;
-            background-color: var(--secondary-bg-color);
-            padding: 25px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-            width: 90%;
-            max-width: 550px;
-            animation: fadeIn 0.8s ease-in-out;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes textGlow {
-            from { text-shadow: 0 0 5px var(--accent-color); }
-            to { text-shadow: 0 0 20px var(--accent-focus-outline-color); }
-        }
-        
-        @keyframes fadeInImage {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* --- Form Elements --- */
-        label {
-            display: block;
-            text-align: left;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            color: #cccccc;
-        }
-
-        input[type="text"], select {
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: var(--border-radius-small);
-            background-color: var(--tertiary-bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--tertiary-bg-color);
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        input[type="text"]::placeholder {
-            color: var(--placeholder-text-color);
+            max-width: 1600px;
+            justify-content: center;
+            align-items: flex-start;
         }
 
-        input[type="text"]:focus, 
-        select:focus {
+        /* --- Controls Panel --- */
+        .controls-panel {
+            flex: 1;
+            min-width: 340px;
+            max-width: 450px;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+
+        .controls-panel::-webkit-scrollbar { width: 8px; }
+        .controls-panel::-webkit-scrollbar-track { background: var(--panel-bg); }
+        .controls-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        details {
+            margin-bottom: 10px;
+            background: #363636;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 12px 15px;
+            background: #444;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text);
+            user-select: none;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary:hover { background: #505050; }
+        summary::after { content: '+'; font-weight: bold; color: var(--primary); }
+        details[open] summary::after { content: '-'; }
+
+        .control-group { padding: 15px; border-top: 1px solid #555; }
+
+        /* --- Inputs --- */
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+
+        span.val { color: var(--primary); font-family: monospace; }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #555;
+            border-radius: 5px;
             outline: none;
-            border-color: var(--accent-focus-outline-color);
-            box-shadow: 0 0 5px var(--accent-focus-outline-color);
+            -webkit-appearance: none;
+            margin-bottom: 12px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            background: var(--input-bg);
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            background: var(--input-bg);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+
+        .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .checkbox-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .checkbox-row label { margin: 0; cursor: pointer; color: var(--text); }
+        .checkbox-row input { width: auto; cursor: pointer; }
+
+        /* --- Gradient Editor --- */
+        #gradient-stops-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .gradient-stop-item { display: flex; align-items: center; gap: 10px; background: #3a3a3a; padding: 5px; border-radius: 4px; }
+        .gradient-stop-item input[type="color"] { border: none; width: 40px; height: 30px; cursor: pointer; background: none; padding: 0; }
+        .gradient-stop-item input[type="number"] { margin: 0; width: 60px; }
+        .remove-stop-btn { background: #e74c3c; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+        #gradient-preview { height: 20px; width: 100%; border-radius: 4px; border: 1px solid #555; margin-top: 10px; margin-bottom: 10px;}
+
+        /* --- Visualizers --- */
+        .visualizer-column {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 350px;
+        }
+
+        .canvas-card {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #444;
+        }
+        
+        .card-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .card-title { font-weight: bold; color: var(--text); }
+
+        canvas#textureCanvas {
+            background-color: #eee;
+            image-rendering: pixelated;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #threeContainer {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
         }
 
         /* --- Buttons --- */
-        .button-group {
-            margin-top: 10px;
+        .action-buttons { display: flex; gap: 10px; width: 100%; margin-top: 15px; }
+        button.action-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+            text-transform: uppercase; font-size: 0.8rem;
         }
+        .btn-generate { background-color: var(--primary); color: white; }
+        .btn-random { background-color: var(--accent); color: white; }
+        .btn-download { background-color: var(--secondary); color: white; }
+        .btn-clear { background-color: #c0392b; color: white; }
+        .btn-generate:hover { background-color: #2980b9; }
+        .btn-small { padding: 5px 10px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
 
-        button {
-            background-color: var(--accent-color);
-            padding: 10px 20px;
-            border-radius: var(--border-radius-small);
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            color: var(--text-color);
-            margin: 5px;
-            user-select: none;
-            transition: transform 0.2s, background-color 0.3s;
+        /* Loader */
+        #loader {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); color: white;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+            text-align: center; font-weight: bold; font-size: 1.2rem;
         }
-
-        button:hover {
-            background-color: var(--accent-hover-color);
-            transform: scale(1.05);
-        }
-
-        button:focus-visible { /* Modern pseudo-class for keyboard focus */
-            outline: 2px solid var(--accent-focus-outline-color);
-            outline-offset: 2px;
-        }
+        #loader.active { opacity: 1; pointer-events: all; }
+        #loader span { font-size: 0.8rem; font-weight: normal; margin-top: 5px; color: #aaa; }
         
-        button:disabled {
-            background-color: var(--disabled-btn-bg-color);
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        button:disabled:hover {
-            background-color: var(--disabled-btn-bg-color);
-        }
+        /* Status Banner */
+        #uploadStatus { font-size: 0.8em; color: #2ecc71; display: none; margin-bottom: 10px; }
+        #resWarning { color: #e74c3c; font-size: 0.75rem; display: none; margin-top: 5px; }
 
-        /* --- UI Components (Image, Messages) --- */
-        #thumbnailImage {
-            margin-top: 25px;
-            max-width: 100%;
-            border-radius: var(--border-radius-medium);
-            display: none;
-            animation: fadeInImage 0.5s ease-in-out;
-            transition: opacity 0.5s ease-in-out;
-            border: 1px solid var(--tertiary-bg-color);
-        }
-        
-        .loading {
-            display: none;
-            color: var(--accent-color);
-            font-style: italic;
-            margin-top: 15px;
-        }
-
-        .error {
-            color: var(--error-color);
-            margin-top: 15px;
-            min-height: 1.2em;
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>YouTube Thumbnail Viewer</h1>
-    
-    <form id="thumbnailForm">
-        <label for="youtubeUrl">YouTube URL or Video ID:</label>
-        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" aria-label="Enter YouTube URL or Video ID" required>
-        
-        <label for="qualitySelector">Select Thumbnail Quality:</label>
-        <select id="qualitySelector" aria-label="Select thumbnail quality">
-            <option value="auto">Auto (Best Available)</option>
-            <option value="maxresdefault">Maximum Resolution (maxresdefault.jpg)</option>
-            <option value="sddefault">Standard Definition (sddefault.jpg)</option>
-            <option value="hqdefault">High Quality (hqdefault.jpg)</option>
-            <option value="mqdefault">Medium Quality (mqdefault.jpg)</option>
-            <option value="default">Default (default.jpg)</option>
-        </select>
+    <h1>Ultimate Texture Generator <span style="font-size:0.5em; color:#888;">PRO EDITION</span></h1>
 
-        <div class="button-group">
-            <button type="submit" id="viewButton">View Thumbnail</button>
-            <button type="button" id="resetButton">Reset</button>
-            <button type="button" id="downloadButton" disabled>Download Thumbnail</button>
+    <div class="main-container">
+        <!-- Controls Side -->
+        <div class="controls-panel">
+            
+            <details>
+                <summary>Upload Custom Texture</summary>
+                <div class="control-group">
+                    <p style="font-size: 0.8rem; color:#aaa; margin-top:0;">Upload an image to override procedural generation. The image will also be used as a Bump map.</p>
+                    <input type="file" id="imageInput" accept="image/*">
+                    <div id="uploadStatus">Custom Image Loaded Active</div>
+                    <button class="action-btn btn-clear" id="clearImageBtn" style="width:100%">Clear Image / Use Generator</button>
+                </div>
+            </details>
+
+            <details open>
+                <summary>Generation & Resolution</summary>
+                <div class="control-group">
+                    <label>Style Preset</label>
+                    <select id="presetSelect">
+                        <option value="custom">Custom Configuration</option>
+                        <option value="stone">Granite Stone</option>
+                        <option value="lava">Molten Lava</option>
+                        <option value="wood">Wood Grain</option>
+                        <option value="water">Ocean Water</option>
+                        <option value="clouds">Sky Clouds</option>
+                        <option value="rust">Corroded Metal</option>
+                        <option value="cells">Alien Cells</option>
+                        <option value="ice">Cracked Ice</option>
+                    </select>
+                    
+                    <label style="margin-top:15px;">Output Resolution</label>
+                    <select id="resPreset">
+                        <option value="256x256" selected>Square 256x256 (Fast)</option>
+                        <option value="512x512">Square 512x512</option>
+                        <option value="1024x1024">Square 1K (1024x1024)</option>
+                        <option value="2048x2048">Square 2K (2048x2048)</option>
+                        <option value="1280x720">HD (720p) - 1280x720</option>
+                        <option value="1920x1080">Full HD (1080p) - 1920x1080</option>
+                        <option value="2560x1440">QHD (2K) - 2560x1440</option>
+                        <option value="3840x2160">4K UHD - 3840x2160 (Heavy)</option>
+                        <option value="7680x4320">8K UHD - 7680x4320 (Extreme)</option>
+                        <option value="custom">Custom Dimensions</option>
+                    </select>
+
+                    <div class="row">
+                        <input type="number" id="texWidth" value="256" placeholder="W" min="1" max="8192">
+                        <span>x</span>
+                        <input type="number" id="texHeight" value="256" placeholder="H" min="1" max="8192">
+                    </div>
+                    <div id="resWarning">⚠️ High Resolution selected. Please be patient.</div>
+
+                    <label style="margin-top:15px;">Seed (Randomness)</label>
+                    <div class="row">
+                        <input type="number" id="seed" value="12345">
+                        <button class="btn-small" style="background:var(--accent)" id="newSeedBtn">🎲</button>
+                    </div>
+                </div>
+            </details>
+
+            <details open>
+                <summary>Base Noise</summary>
+                <div class="control-group">
+                    <label>Algorithm</label>
+                    <select id="noiseType">
+                        <option value="perlin">Perlin Noise (Natural)</option>
+                        <option value="value">Value Noise (Blocky)</option>
+                        <option value="worley">Worley (Cellular/Bubbles)</option>
+                    </select>
+
+                    <label>Scale (Zoom): <span class="val" id="scaleVal">50</span></label>
+                    <input type="range" id="scale" min="5" max="300" value="50">
+
+                    <label>Detail Layers (Octaves): <span class="val" id="octavesVal">4</span></label>
+                    <input type="range" id="octaves" min="1" max="10" value="4">
+
+                    <label>Roughness (Persistence): <span class="val" id="persistenceVal">0.5</span></label>
+                    <input type="range" id="persistence" min="0" max="1" step="0.05" value="0.5">
+                    
+                    <label>Detail Size (Lacunarity): <span class="val" id="lacunarityVal">2.0</span></label>
+                    <input type="range" id="lacunarity" min="1" max="4" step="0.1" value="2.0">
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="ridged">
+                        <label for="ridged">Ridged Mode (Sharp Peaks)</label>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Color & Gradient</summary>
+                <div class="control-group">
+                    <div id="gradient-preview"></div>
+                    <div id="gradient-stops-list"></div>
+                    <button class="btn-small" id="addStopBtn">+ Add Color Stop</button>
+                </div>
+            </details>
+
+            <details>
+                <summary>Distortion (FBM)</summary>
+                <div class="control-group">
+                    <label>Warp Strength: <span class="val" id="turbStrengthVal">0</span></label>
+                    <input type="range" id="turbStrength" min="0" max="200" value="0">
+
+                    <label>Warp Scale: <span class="val" id="turbScaleVal">50</span></label>
+                    <input type="range" id="turbScale" min="10" max="200" value="50">
+                </div>
+            </details>
+
+            <details>
+                <summary>Worley Settings</summary>
+                <div class="control-group">
+                    <label>Calculation Function</label>
+                    <select id="worleyType">
+                        <option value="f1">F1 (Closest Point)</option>
+                        <option value="f2">F2 (2nd Closest)</option>
+                        <option value="f2-f1">F2 - F1 (Cell Edges)</option>
+                    </select>
+                    
+                    <label>Distance Metric</label>
+                    <select id="worleyDist">
+                        <option value="euclidean">Euclidean (Round)</option>
+                        <option value="manhattan">Manhattan (Diamond)</option>
+                    </select>
+                </div>
+            </details>
+
+            <details>
+                <summary>Post Processing</summary>
+                <div class="control-group">
+                    <label>Contrast: <span class="val" id="contrastVal">1.0</span></label>
+                    <input type="range" id="contrast" min="0" max="3" step="0.1" value="1.0">
+
+                    <label>Brightness: <span class="val" id="brightnessVal">0.0</span></label>
+                    <input type="range" id="brightness" min="-1" max="1" step="0.05" value="0.0">
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="invert">
+                        <label for="invert">Invert Colors</label>
+                    </div>
+                    
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="thresholdEnable">
+                        <label for="thresholdEnable">Hard Threshold</label>
+                    </div>
+                    
+                    <label>Threshold Level: <span class="val" id="thresholdVal">0.5</span></label>
+                    <input type="range" id="threshold" min="0" max="1" step="0.01" value="0.5">
+                </div>
+            </details>
+            
+            <details open>
+                <summary>Material & 3D Settings</summary>
+                <div class="control-group">
+                    <label>Bump Map Depth: <span class="val" id="bumpScaleVal">0.2</span></label>
+                    <input type="range" id="bumpScale" min="0" max="2" step="0.05" value="0.2">
+
+                    <label>Material Roughness: <span class="val" id="matRoughnessVal">0.6</span></label>
+                    <input type="range" id="matRoughness" min="0" max="1" step="0.05" value="0.6">
+
+                    <label>Material Metalness: <span class="val" id="matMetalnessVal">0.1</span></label>
+                    <input type="range" id="matMetalness" min="0" max="1" step="0.05" value="0.1">
+                </div>
+            </details>
+
+            <div class="action-buttons">
+                <button class="action-btn btn-random" id="randomBtn">Randomize</button>
+                <button class="action-btn btn-generate" id="generateBtn">Force Render</button>
+            </div>
         </div>
-    </form>
-    
-    <div id="loadingMessage" class="loading" role="status">Loading thumbnail...</div>
-    <p id="errorMessage" class="error" aria-live="polite"></p>
-    <img id="thumbnailImage" alt="YouTube Thumbnail" draggable="false">
-</div>
 
-<script defer>
-    'use strict';
+        <!-- Visualizer Column -->
+        <div class="visualizer-column">
+            
+            <!-- 3D Preview -->
+            <div class="canvas-card">
+                <div class="card-header">
+                    <span class="card-title">3D Preview</span>
+                    <select id="meshSelect" style="width: auto; margin:0; padding: 4px;">
+                        <option value="block">Block (Cube)</option>
+                        <option value="sphere">Ball (Sphere)</option>
+                        <option value="cylinder">Cylinder</option>
+                        <option value="wedge">Wedge</option>
+                        <option value="cornerWedge">Corner Wedge</option>
+                        <option value="torus">Torus (Donut)</option>
+                        <option value="plane">Plane (Flat)</option>
+                        <option value="cone">Cone</option>
+                        <option value="icosahedron">Icosahedron</option>
+                    </select>
+                </div>
+                <div id="threeContainer">
+                    <div id="loader">
+                        <div id="loaderText">Processing Texture...</div>
+                        <span>Large resolutions utilize async chunking to prevent freezes.</span>
+                    </div>
+                </div>
+            </div>
 
-    // Group all DOM element references in a single object for better organization.
-    const ui = {
-        form: document.getElementById('thumbnailForm'),
-        urlInput: document.getElementById('youtubeUrl'),
-        qualitySelector: document.getElementById('qualitySelector'),
-        viewButton: document.getElementById('viewButton'),
-        resetButton: document.getElementById('resetButton'),
-        downloadButton: document.getElementById('downloadButton'),
-        loadingMessage: document.getElementById('loadingMessage'),
-        thumbnailImage: document.getElementById('thumbnailImage'),
-        errorMessage: document.getElementById('errorMessage'),
-    };
-    
-    const THUMBNAIL_BASE_URL = 'https://i.ytimg.com/vi/';
+            <!-- 2D Texture -->
+            <div class="canvas-card">
+                <div class="card-header">
+                    <span class="card-title">2D Texture Map</span>
+                    <button class="btn-small btn-download" id="downloadBtn">Download .PNG</button>
+                </div>
+                <canvas id="textureCanvas" width="256" height="256"></canvas>
+            </div>
 
-    /**
-     * Initializes the application by setting up event listeners.
-     */
-    function initialize() {
-        ui.form.addEventListener('submit', handleFormSubmit);
-        ui.resetButton.addEventListener('click', resetApp);
-        ui.downloadButton.addEventListener('click', downloadThumbnail);
+        </div>
+    </div>
+
+<script>
+/**
+ * ULTIMATE Texture Generator 3D - PRO EDITION
+ * Fully optimized async generation and PBR implementation.
+ */
+
+// --- 1. UTILITIES & MATH ---
+
+class SeededRandom {
+    constructor(seed) { this.seed = seed; }
+    next() {
+        var t = this.seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     }
+}
 
-    /**
-     * Handles the form submission, preventing default behavior and fetching the thumbnail.
-     * @param {Event} event - The form submission event.
-     */
-    function handleFormSubmit(event) {
-        event.preventDefault();
-        fetchThumbnail();
-    }
+const lerp = (a, b, t) => a + t * (b - a);
+const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] :[0, 0, 0];
+};
 
-    /**
-     * Extracts a YouTube video ID from various URL formats or returns the input if it's already an ID.
-     * @param {string} input - The YouTube URL or video ID string.
-     * @returns {string|null} The 11-character video ID or null if not found.
-     */
-    function extractVideoId(input) {
-        if (/^[\w-]{11}$/.test(input)) {
-            return input; // Already a valid video ID
+// --- 2. NOISE GENERATOR CLASS ---
+
+class NoiseGenerator {
+    constructor(seed) {
+        this.prng = new SeededRandom(seed);
+        this.p = new Uint8Array(512);
+        this.perm = new Uint8Array(512);
+        for(let i=0; i<256; i++) this.p[i] = i;
+        for(let i=0; i<256; i++) {
+            const r = Math.floor(this.prng.next() * 256);
+            [this.p[i], this.p[r]] = [this.p[r], this.p[i]];
         }
-        const regex = /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/;
-        const match = input.match(regex);
-        return match ? match[1] : null;
+        for(let i=0; i<512; i++) this.perm[i] = this.p[i & 255];
     }
+    grad(hash, x, y) {
+        const h = hash & 15;
+        const u = h < 8 ? x : y;
+        const v = h < 4 ? y : (h === 12 || h === 14 ? x : 0);
+        return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    }
+    perlin(x, y) {
+        const X = Math.floor(x) & 255; const Y = Math.floor(y) & 255;
+        x -= Math.floor(x); y -= Math.floor(y);
+        const u = fade(x); const v = fade(y);
+        const A = this.perm[X]+Y, AA = this.perm[A], AB = this.perm[A+1];
+        const B = this.perm[X+1]+Y, BA = this.perm[B], BB = this.perm[B+1];
+        return lerp(lerp(this.grad(this.perm[AA], x, y), this.grad(this.perm[BA], x-1, y), u),
+                    lerp(this.grad(this.perm[AB], x, y-1), this.grad(this.perm[BB], x-1, y-1), u), v);
+    }
+    value(x, y) {
+        const X = Math.floor(x) & 255; const Y = Math.floor(y) & 255;
+        x -= Math.floor(x); y -= Math.floor(y);
+        const u = fade(x); const v = fade(y);
+        const n00 = this.perm[X + this.perm[Y]] / 255;
+        const n10 = this.perm[X + 1 + this.perm[Y]] / 255;
+        const n01 = this.perm[X + this.perm[Y + 1]] / 255;
+        const n11 = this.perm[X + 1 + this.perm[Y + 1]] / 255;
+        return (lerp(lerp(n00, n10, u), lerp(n01, n11, u), v) * 2) - 1;
+    }
+    worley(x, y, type, isManhattan) {
+        const xInt = Math.floor(x); const yInt = Math.floor(y);
+        const xFrac = x - xInt; const yFrac = y - yInt;
+        let minDist = 100; let secondMinDist = 100;
+        for(let yNeighbor = -1; yNeighbor <= 1; yNeighbor++) {
+            for(let xNeighbor = -1; xNeighbor <= 1; xNeighbor++) {
+                const neighborX = xInt + xNeighbor;
+                const neighborY = yInt + yNeighbor;
+                let hash = (Math.sin(neighborX * 12.9898 + neighborY * 78.233 + this.prng.seed) * 43758.5453);
+                hash = hash - Math.floor(hash); const pointX = xNeighbor + hash; 
+                hash = (Math.sin(neighborX * 98.233 + neighborY * 12.9898 + this.prng.seed) * 23421.6543);
+                hash = hash - Math.floor(hash); const pointY = yNeighbor + hash;
+                const diffX = pointX - xFrac; const diffY = pointY - yFrac;
+                let d = isManhattan ? Math.abs(diffX) + Math.abs(diffY) : Math.sqrt(diffX*diffX + diffY*diffY);
+                if (d < minDist) { secondMinDist = minDist; minDist = d; } else if (d < secondMinDist) { secondMinDist = d; }
+            }
+        }
+        if(type === 'f1') return (minDist * 2) - 1;
+        if(type === 'f2') return (secondMinDist * 2) - 1;
+        return ((secondMinDist - minDist) * 4) - 1;
+    }
+}
 
-    /**
-     * Checks if an image at a given URL exists and is loadable.
-     * @param {string} url - The URL of the image to check.
-     * @returns {Promise<boolean>} A promise that resolves to true if the image exists, false otherwise.
-     */
-    function imageExists(url) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            img.src = url;
+// --- 3. THREE.JS VIEWPORT CONTROLLER ---
+
+class ThreeController {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x1a1a1a);
+        
+        // Camera
+        this.camera = new THREE.PerspectiveCamera(45, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+        this.camera.position.set(2, 1.5, 2);
+        
+        // Renderer
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.container.appendChild(this.renderer.domElement);
+        
+        // Controls
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+
+        // Enhanced Lighting for PBR reflection visualization
+        const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        const backLight = new THREE.DirectionalLight(0xabcdef, 0.4);
+        backLight.position.set(-5, -10, -7);
+        const fillLight = new THREE.DirectionalLight(0xffccaa, 0.3);
+        fillLight.position.set(5, 0, -5);
+        this.scene.add(ambient, dirLight, backLight, fillLight);
+
+        // Grid
+        const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
+        this.scene.add(gridHelper);
+
+        this.mesh = null;
+        this.material = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            roughness: 0.6,
+            metalness: 0.1,
+            side: THREE.DoubleSide
+        });
+
+        this.initGeometries();
+        this.setMesh('block');
+        this.animate();
+
+        window.addEventListener('resize', () => {
+             this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+             this.camera.updateProjectionMatrix();
+             this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         });
     }
-    
-    /**
-     * Sets the UI to a loading state.
-     * @param {boolean} isLoading - True to show loading, false to hide.
-     */
-    function setLoadingState(isLoading) {
-        ui.loadingMessage.style.display = isLoading ? 'block' : 'none';
-        ui.viewButton.disabled = isLoading;
-        ui.resetButton.disabled = isLoading;
+
+    initGeometries() {
+        this.geometries = {};
+
+        // Higher segment counts for smoother bumps
+        this.geometries.block = new THREE.BoxGeometry(1, 1, 1, 16, 16, 16);
+        this.geometries.sphere = new THREE.SphereGeometry(0.6, 64, 64);
+        this.geometries.cylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 64, 16);
+        this.geometries.torus = new THREE.TorusGeometry(0.4, 0.15, 32, 100);
+        this.geometries.plane = new THREE.PlaneGeometry(1.5, 1.5, 32, 32);
+        this.geometries.cone = new THREE.ConeGeometry(0.5, 1, 64);
+        this.geometries.icosahedron = new THREE.IcosahedronGeometry(0.6, 16);
+
+        // Wedges remain manual mapping
+        const wedgeGeo = new THREE.BufferGeometry();
+        const wedgeVertices = new Float32Array([
+            -0.5, -0.5, 0.5,   0.5, -0.5, 0.5,  -0.5, -0.5, -0.5, 
+            0.5, -0.5, 0.5,   0.5, -0.5, -0.5,  -0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
+            0.5, -0.5, -0.5,   0.5, 0.5, -0.5,   -0.5, 0.5, -0.5,
+            -0.5, -0.5, 0.5,   -0.5, 0.5, -0.5,   0.5, -0.5, 0.5,
+            0.5, -0.5, 0.5,    -0.5, 0.5, -0.5,   0.5, 0.5, -0.5,
+            -0.5, -0.5, 0.5,   -0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
+            0.5, -0.5, 0.5,    0.5, 0.5, -0.5,    0.5, -0.5, -0.5
+        ]);
+        const wedgeUVs = new Float32Array([
+            0,1, 1,1, 0,0,  1,1, 1,0, 0,0,
+            0,0, 1,0, 0,1,  1,0, 1,1, 0,1,
+            0,0, 0,1, 1,0,  1,0, 0,1, 1,1,
+            0,0, 1,0, 1,1,  0,0, 1,1, 0,1
+        ]);
+        wedgeGeo.setAttribute('position', new THREE.BufferAttribute(wedgeVertices, 3));
+        wedgeGeo.setAttribute('uv', new THREE.BufferAttribute(wedgeUVs, 2));
+        wedgeGeo.computeVertexNormals();
+        this.geometries.wedge = wedgeGeo;
+
+        const cornerGeo = new THREE.BufferGeometry();
+        const cornerVertices = new Float32Array([
+            -0.5, -0.5, 0.5,  0.5, -0.5, -0.5,  -0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
+             -0.5, -0.5, 0.5, -0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
+             -0.5, -0.5, 0.5,  -0.5, 0.5, -0.5,  0.5, -0.5, -0.5
+        ]);
+        const cornerUVs = new Float32Array([
+             0,1, 1,0, 0,0,
+             0,0, 1,0, 0,1,
+             0,1, 0,0, 1,0,
+             0,0, 0,1, 1,0
+        ]);
+        cornerGeo.setAttribute('position', new THREE.BufferAttribute(cornerVertices, 3));
+        cornerGeo.setAttribute('uv', new THREE.BufferAttribute(cornerUVs, 2));
+        cornerGeo.computeVertexNormals();
+        this.geometries.cornerWedge = cornerGeo;
     }
-    
-    /**
-     * Resets the thumbnail image display.
-     */
-    function resetImage() {
-        ui.thumbnailImage.style.display = 'none';
-        ui.thumbnailImage.removeAttribute('src');
-        ui.downloadButton.disabled = true;
+
+    setMesh(type) {
+        if(this.mesh) this.scene.remove(this.mesh);
+        this.mesh = new THREE.Mesh(this.geometries[type], this.material);
+        this.mesh.position.y = 0;
+        this.scene.add(this.mesh);
     }
 
-    /**
-     * Main function to fetch and display the YouTube thumbnail.
-     */
-    async function fetchThumbnail() {
-        // Reset UI state before starting
-        setLoadingState(true);
-        ui.errorMessage.textContent = '';
-        resetImage();
+    updateMaterial() {
+        if(!this.material) return;
+        this.material.roughness = parseFloat(document.getElementById('matRoughness').value);
+        this.material.metalness = parseFloat(document.getElementById('matMetalness').value);
+        this.material.bumpScale = parseFloat(document.getElementById('bumpScale').value);
+        this.material.needsUpdate = true;
+    }
 
-        const videoUrlOrId = ui.urlInput.value.trim();
-        const videoId = extractVideoId(videoUrlOrId);
-        const selectedQuality = ui.qualitySelector.value;
-
-        if (!videoId) {
-            ui.errorMessage.textContent = "Please enter a valid YouTube URL or Video ID.";
-            setLoadingState(false);
-            ui.urlInput.focus();
-            return;
-        }
-
-        let finalThumbnailUrl = '';
+    updateTexture(canvas) {
+        if(this.currentTexture) this.currentTexture.dispose();
         
-        try {
-            if (selectedQuality === "auto") {
-                const maxResUrl = `${THUMBNAIL_BASE_URL}${videoId}/maxresdefault.jpg`;
-                finalThumbnailUrl = (await imageExists(maxResUrl)) 
-                    ? maxResUrl 
-                    : `${THUMBNAIL_BASE_URL}${videoId}/hqdefault.jpg`;
+        this.currentTexture = new THREE.CanvasTexture(canvas);
+        this.currentTexture.wrapS = THREE.RepeatWrapping;
+        this.currentTexture.wrapT = THREE.RepeatWrapping;
+        
+        this.material.map = this.currentTexture;
+        this.material.bumpMap = this.currentTexture;
+        this.updateMaterial();
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        if(this.mesh) this.mesh.rotation.y += 0.002;
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+    }
+}
+
+// --- 4. APP STATE & LOGIC ---
+
+const state = {
+    gradientStops:[{ pos: 0.0, color: "#000000" }, { pos: 1.0, color: "#ffffff" }],
+    canvas: document.getElementById('textureCanvas'),
+    inputs: {},
+    uploadedImage: null
+};
+const ctx = state.canvas.getContext('2d', { willReadFrequently: true });
+let threeView = null; 
+let currentGenId = 0; // ID Tracker for Async Generator
+
+function init() {
+    threeView = new ThreeController('threeContainer');
+
+    const ids =[
+        'texWidth', 'texHeight', 'seed', 'noiseType', 'scale', 'octaves', 
+        'persistence', 'lacunarity', 'ridged', 
+        'turbStrength', 'turbScale', 'worleyType', 'worleyDist',
+        'contrast', 'brightness', 'invert', 'thresholdEnable', 'threshold',
+        'bumpScale', 'matRoughness', 'matMetalness'
+    ];
+    
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        state.inputs[id] = el;
+        
+        el.addEventListener('input', (e) => {
+            if(id === 'texWidth' || id === 'texHeight') {
+                document.getElementById('resPreset').value = 'custom';
+                checkResWarning();
+            }
+            if(el.type === 'range') updateValueLabel(id, e.target.value);
+
+            // Optimization: Change Material settings without redrawing 2D Canvas!
+            if (['matRoughness', 'matMetalness', 'bumpScale'].includes(id)) {
+                threeView.updateMaterial();
             } else {
-                const specificUrl = `${THUMBNAIL_BASE_URL}${videoId}/${selectedQuality}.jpg`;
-                if (["maxresdefault", "sddefault"].includes(selectedQuality) && !(await imageExists(specificUrl))) {
-                    ui.errorMessage.textContent = `Thumbnail quality '${selectedQuality}' is not available. Try 'Auto'.`;
-                    setLoadingState(false);
-                    return;
-                }
-                finalThumbnailUrl = specificUrl;
+                document.getElementById('presetSelect').value = 'custom';
+                debouncedGenerate();
+            }
+        });
+    });
+
+    const resPreset = document.getElementById('resPreset');
+    resPreset.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if(val !== 'custom') {
+            const[w, h] = val.split('x').map(Number);
+            document.getElementById('texWidth').value = w;
+            document.getElementById('texHeight').value = h;
+            checkResWarning();
+            generateTexture();
+        }
+    });
+
+    document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+    document.getElementById('clearImageBtn').addEventListener('click', clearImageUpload);
+
+    document.getElementById('generateBtn').addEventListener('click', generateTexture);
+    document.getElementById('randomBtn').addEventListener('click', randomize);
+    document.getElementById('downloadBtn').addEventListener('click', download);
+    document.getElementById('newSeedBtn').addEventListener('click', () => {
+        state.inputs.seed.value = Math.floor(Math.random() * 99999);
+        generateTexture();
+    });
+    document.getElementById('addStopBtn').addEventListener('click', () => addGradientStop(0.5, "#808080"));
+    
+    document.getElementById('presetSelect').addEventListener('change', (e) => loadPreset(e.target.value));
+    
+    document.getElementById('meshSelect').addEventListener('change', (e) => {
+        threeView.setMesh(e.target.value);
+    });
+
+    renderGradientUI();
+    generateTexture();
+}
+
+// --- Helper Functions ---
+
+function checkResWarning() {
+    const w = parseInt(state.inputs.texWidth.value);
+    const h = parseInt(state.inputs.texHeight.value);
+    const warning = document.getElementById('resWarning');
+    if(w * h > 3840 * 2160) {
+        warning.style.display = 'block';
+    } else {
+        warning.style.display = 'none';
+    }
+}
+
+function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+            state.uploadedImage = img;
+            document.getElementById('uploadStatus').style.display = 'block';
+            generateTexture();
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearImageUpload() {
+    state.uploadedImage = null;
+    document.getElementById('imageInput').value = "";
+    document.getElementById('uploadStatus').style.display = 'none';
+    generateTexture();
+}
+
+function updateValueLabel(id, val) {
+    const labelEl = document.getElementById(id + 'Val');
+    if(labelEl) labelEl.innerText = val;
+}
+
+let debounceTimer;
+function debouncedGenerate() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(generateTexture, 50);
+}
+
+// --- 5. ASYNC TEXTURE GENERATION CORE ---
+
+async function generateTexture() {
+    currentGenId++;
+    const genId = currentGenId; // Freeze the ID for this specific thread loop
+
+    const loader = document.getElementById('loader');
+    const loaderText = document.getElementById('loaderText');
+    loader.classList.add('active');
+    loaderText.innerText = 'Starting Generator...';
+
+    // Yield immediately so UI can show the loader
+    await new Promise(r => setTimeout(r, 10));
+
+    const width = Math.min(8192, Math.max(1, parseInt(state.inputs.texWidth.value) || 256));
+    const height = Math.min(8192, Math.max(1, parseInt(state.inputs.texHeight.value) || 256));
+    state.canvas.width = width;
+    state.canvas.height = height;
+
+    if(state.uploadedImage) {
+        ctx.drawImage(state.uploadedImage, 0, 0, width, height);
+        threeView.updateTexture(state.canvas);
+        loader.classList.remove('active');
+        return; 
+    }
+
+    const seed = parseInt(state.inputs.seed.value);
+    const scale = parseInt(state.inputs.scale.value);
+    const octaves = parseInt(state.inputs.octaves.value);
+    const persistence = parseFloat(state.inputs.persistence.value);
+    const lacunarity = parseFloat(state.inputs.lacunarity.value);
+    const isRidged = state.inputs.ridged.checked;
+    const turbStrength = parseInt(state.inputs.turbStrength.value);
+    const turbScale = parseInt(state.inputs.turbScale.value);
+    const contrast = parseFloat(state.inputs.contrast.value);
+    const brightness = parseFloat(state.inputs.brightness.value);
+    const invert = state.inputs.invert.checked;
+    const threshEnable = state.inputs.thresholdEnable.checked;
+    const threshVal = parseFloat(state.inputs.threshold.value);
+    const noiseType = state.inputs.noiseType.value;
+    const wType = state.inputs.worleyType.value;
+    const isManhattan = state.inputs.worleyDist.value === 'manhattan';
+
+    const noiseGen = new NoiseGenerator(seed);
+    const turbGen = new NoiseGenerator(seed + 999);
+
+    // Optimized Gradient System (Sorts ONCE before loop)
+    const sortedStops = [...state.gradientStops].sort((a, b) => a.pos - b.pos);
+    
+    function mapColorOptimized(t) {
+        if (t <= sortedStops[0].pos) return hexToRgb(sortedStops[0].color);
+        if (t >= sortedStops[sortedStops.length-1].pos) return hexToRgb(sortedStops[sortedStops.length-1].color);
+        for (let i = 0; i < sortedStops.length - 1; i++) {
+            if (t >= sortedStops[i].pos && t <= sortedStops[i+1].pos) {
+                const range = sortedStops[i+1].pos - sortedStops[i].pos;
+                const localT = (t - sortedStops[i].pos) / range;
+                const c1 = hexToRgb(sortedStops[i].color);
+                const c2 = hexToRgb(sortedStops[i+1].color);
+                return [
+                    Math.floor(c1[0] + localT * (c2[0] - c1[0])),
+                    Math.floor(c1[1] + localT * (c2[1] - c1[1])),
+                    Math.floor(c1[2] + localT * (c2[2] - c1[2]))
+                ];
+            }
+        }
+        return [0,0,0];
+    }
+
+    const gradientLUT = new Uint8ClampedArray(256 * 4);
+    for(let i=0; i<256; i++) {
+        const rgb = mapColorOptimized(i/255);
+        gradientLUT[i*4] = rgb[0]; gradientLUT[i*4+1] = rgb[1]; gradientLUT[i*4+2] = rgb[2]; gradientLUT[i*4+3] = 255;
+    }
+
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
+
+    // Dynamically decide chunk size based on width. Keeps the event loop snappy.
+    const rowsPerChunk = Math.max(1, Math.floor(100000 / width)); 
+
+    for (let y = 0; y < height; y++) {
+        if (genId !== currentGenId) return; // Halt if new gen requested
+
+        for (let x = 0; x < width; x++) {
+            let nx = x; let ny = y;
+            if (turbStrength > 0) {
+                const tx = turbGen.perlin(x / turbScale, y / turbScale);
+                const ty = turbGen.perlin((x + 1000) / turbScale, (y + 1000) / turbScale);
+                nx += tx * turbStrength; ny += ty * turbStrength;
             }
 
-            ui.thumbnailImage.onload = () => {
-                ui.thumbnailImage.style.display = 'block';
-                ui.downloadButton.disabled = false;
-                setLoadingState(false);
-            };
+            let amplitude = 1; let frequency = 1; let noiseValue = 0; let maxValue = 0;
 
-            ui.thumbnailImage.onerror = () => {
-                ui.errorMessage.textContent = `Failed to load thumbnail. The image may be restricted or unavailable.`;
-                setLoadingState(false);
-            };
+            for (let o = 0; o < octaves; o++) {
+                const sampleX = nx / scale * frequency;
+                const sampleY = ny / scale * frequency;
+                let n;
+                
+                if (noiseType === 'perlin') n = noiseGen.perlin(sampleX, sampleY);
+                else if (noiseType === 'value') n = noiseGen.value(sampleX, sampleY);
+                else n = noiseGen.worley(sampleX, sampleY, wType, isManhattan);
+
+                if (isRidged) { n = 1.0 - Math.abs(n); n = n * n; }
+                noiseValue += n * amplitude; maxValue += amplitude;
+                amplitude *= persistence; frequency *= lacunarity;
+            }
+
+            if (!isRidged && noiseType !== 'worley') noiseValue = (noiseValue / maxValue + 1) / 2;
+            else { noiseValue = noiseValue / maxValue; if(noiseType === 'worley' && wType === 'f2-f1') noiseValue += 0.5; }
             
-            ui.thumbnailImage.src = finalThumbnailUrl;
-        } catch (error) {
-            console.error("Error in fetchThumbnail:", error);
-            ui.errorMessage.textContent = "An unexpected error occurred while fetching the thumbnail.";
-            setLoadingState(false);
+            if (invert) noiseValue = 1.0 - noiseValue;
+            noiseValue = (noiseValue - 0.5) * contrast + 0.5 + brightness;
+            noiseValue = Math.max(0, Math.min(1, noiseValue));
+            if(threshEnable) noiseValue = noiseValue >= threshVal ? 1.0 : 0.0;
+
+            const lutIndex = Math.floor(noiseValue * 255);
+            const idx = (y * width + x) * 4;
+            data[idx] = gradientLUT[lutIndex * 4];
+            data[idx+1] = gradientLUT[lutIndex * 4 + 1];
+            data[idx+2] = gradientLUT[lutIndex * 4 + 2];
+            data[idx+3] = 255;
+        }
+
+        // Asynchronous Yield to prevent browser freeze on high res
+        if (y % rowsPerChunk === 0 || y === height - 1) {
+            ctx.putImageData(imgData, 0, 0); // Progressive render hook
+            loaderText.innerText = `Generating... ${Math.round((y / height) * 100)}%`;
+            await new Promise(r => setTimeout(r, 0));
         }
     }
 
-    /**
-     * Generates a descriptive filename for the thumbnail.
-     * @param {string} videoId - The YouTube video ID.
-     * @param {string} imageSrc - The source URL of the loaded image.
-     * @returns {string} The generated filename (e.g., "dQw4w9WgXcQ_maxresdefault.jpg").
-     */
-    function getFilenameForThumbnail(videoId, imageSrc) {
-        let qualityKey = 'thumbnail';
-        const qualityMatch = imageSrc.match(/\/(\w+default)\.jpg$/);
-        if (qualityMatch) {
-            qualityKey = qualityMatch[1];
-        }
-        return `${videoId}_${qualityKey}.jpg`;
-    }
+    if (genId !== currentGenId) return;
 
-    /**
-     * Downloads the currently displayed thumbnail image.
-     */
-    async function downloadThumbnail() {
-        const videoId = extractVideoId(ui.urlInput.value.trim());
+    ctx.putImageData(imgData, 0, 0);
+    threeView.updateTexture(state.canvas);
+    loader.classList.remove('active');
+}
 
-        if (!ui.thumbnailImage.src || ui.thumbnailImage.style.display !== 'block') {
-            ui.errorMessage.textContent = "No thumbnail is displayed to download.";
-            return;
-        }
-        if (!videoId) {
-            ui.errorMessage.textContent = "Cannot determine Video ID for filename.";
-            return;
-        }
+// --- 6. GRADIENT LOGIC ---
+
+function addGradientStop(pos, color) {
+    state.gradientStops.push({ pos, color });
+    renderGradientUI();
+    debouncedGenerate();
+}
+
+function removeGradientStop(index) {
+    if (state.gradientStops.length <= 2) return alert("Min 2 colors.");
+    state.gradientStops.splice(index, 1);
+    renderGradientUI();
+    debouncedGenerate();
+}
+
+function renderGradientUI() {
+    const list = document.getElementById('gradient-stops-list');
+    list.innerHTML = '';
+    const stops = state.gradientStops.map((s, i) => ({...s, idx: i})).sort((a, b) => a.pos - b.pos);
+    stops.forEach((stop) => {
+        const item = document.createElement('div');
+        item.className = 'gradient-stop-item';
+        item.innerHTML = `<input type="color" value="${stop.color}" class="c"><input type="number" step="0.01" min="0" max="1" value="${stop.pos}" class="p"><button class="remove-stop-btn">×</button>`;
+        item.querySelector('.c').addEventListener('input', e => { state.gradientStops[stop.idx].color = e.target.value; updateGradientPreview(); debouncedGenerate(); });
+        item.querySelector('.p').addEventListener('input', e => { state.gradientStops[stop.idx].pos = parseFloat(e.target.value); updateGradientPreview(); debouncedGenerate(); });
+        item.querySelector('button').addEventListener('click', () => removeGradientStop(stop.idx));
+        list.appendChild(item);
+    });
+    updateGradientPreview();
+}
+
+function updateGradientPreview() {
+    const css = [...state.gradientStops].sort((a, b) => a.pos - b.pos).map(s => `${s.color} ${s.pos * 100}%`).join(', ');
+    document.getElementById('gradient-preview').style.background = `linear-gradient(to right, ${css})`;
+}
+
+// --- 7. PRESETS & ACTIONS ---
+
+function applyStateToUI(p) {
+    const d = {
+        noiseType: 'perlin', scale: 50, octaves: 4, persistence: 0.5, lacunarity: 2.0, ridged: false,
+        turbStrength: 0, turbScale: 50, contrast: 1.0, brightness: 0.0, invert: false,
+        worleyType: 'f1', worleyDist: 'euclidean', thresholdEnable: false, threshold: 0.5,
+        bumpScale: 0.2, matRoughness: 0.6, matMetalness: 0.1,
+        stops:[{pos:0, color:"#000000"}, {pos:1, color:"#ffffff"}]
+    };
+
+    Object.keys(d).forEach(k => {
+        const val = p[k] !== undefined ? p[k] : d[k];
+        const el = state.inputs[k];
+        if(!el) return;
         
-        const originalButtonText = ui.downloadButton.textContent;
-        ui.downloadButton.disabled = true;
-        ui.downloadButton.textContent = 'Downloading...';
+        if (el.type === 'checkbox') el.checked = !!val;
+        else el.value = val;
+        
+        if (el.type === 'range') updateValueLabel(k, val);
+    });
 
-        try {
-            const response = await fetch(ui.thumbnailImage.src, { mode: 'cors' });
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.statusText}`);
-            }
-            const blob = await response.blob();
-            const objectUrl = window.URL.createObjectURL(blob);
-            
-            const anchor = document.createElement('a');
-            anchor.style.display = 'none';
-            anchor.href = objectUrl;
-            anchor.download = getFilenameForThumbnail(videoId, ui.thumbnailImage.src);
-            
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
-            window.URL.revokeObjectURL(objectUrl);
-            ui.errorMessage.textContent = '';
-        } catch (e) {
-            console.error("Download error:", e);
-            ui.errorMessage.textContent = "Could not download the thumbnail. This might be a network or CORS issue.";
-        } finally {
-            ui.downloadButton.disabled = false;
-            ui.downloadButton.textContent = originalButtonText;
-        }
-    }
-    
-    /**
-     * Fades out the image (if visible) before resetting the application state.
-     */
-    function resetApp() {
-        if (ui.thumbnailImage.style.display === 'block') {
-            ui.thumbnailImage.style.opacity = '0';
-            setTimeout(performResetActions, 500); // Match CSS transition duration
-        } else {
-            performResetActions();
-        }
-    }
-    
-    /**
-     * Performs the actual reset of all UI elements to their initial state.
-     */
-    function performResetActions() {
-        ui.form.reset(); // Resets input and select fields
-        resetImage();
-        ui.thumbnailImage.style.opacity = '1';
-        ui.loadingMessage.style.display = 'none';
-        ui.errorMessage.textContent = '';
-        setLoadingState(false);
-        ui.urlInput.focus();
-    }
-    
-    // Start the application
-    initialize();
+    state.gradientStops = JSON.parse(JSON.stringify(p.stops || d.stops));
+    renderGradientUI();
+    threeView.updateMaterial();
+    generateTexture();
+}
 
+function randomize() {
+    if(state.uploadedImage) clearImageUpload();
+    const r = Math.random;
+    
+    const randomState = {
+        seed: Math.floor(r() * 99999),
+        scale: Math.floor(20 + r() * 150),
+        octaves: Math.floor(2 + r() * 6),
+        persistence: (0.3 + r() * 0.6).toFixed(2),
+        ridged: r() > 0.7,
+        turbStrength: r() > 0.5 ? Math.floor(r() * 50) : 0,
+        bumpScale: (0.1 + r() * 0.8).toFixed(2),
+        matRoughness: r().toFixed(2),
+        matMetalness: (r() * 0.8).toFixed(2),
+        stops:[
+            { pos: 0, color: '#' + Math.floor(r()*16777215).toString(16).padStart(6,'0') }, 
+            { pos: 1, color: '#' + Math.floor(r()*16777215).toString(16).padStart(6,'0') }
+        ]
+    };
+    if(r() > 0.5) randomState.stops.push({ pos: 0.5, color: '#' + Math.floor(r()*16777215).toString(16).padStart(6,'0') });
+    
+    state.inputs.seed.value = randomState.seed;
+    applyStateToUI(randomState);
+}
+
+const presets = {
+    stone: { noiseType: 'value', scale: 150, octaves: 8, persistence: 0.6, contrast: 1.0, matRoughness: 0.9, matMetalness: 0.0, stops:[{pos:0, color:"#2c3e50"}, {pos:0.5, color:"#7f8c8d"}, {pos:1, color:"#bdc3c7"}] },
+    lava: { noiseType: 'perlin', scale: 60, octaves: 5, persistence: 0.6, ridged: true, turbStrength: 40, turbScale: 60, contrast: 1.5, brightness: -0.2, invert: true, bumpScale: 0.8, matRoughness: 0.3, matMetalness: 0.1, stops:[{pos:0, color:"#000000"}, {pos:0.3, color:"#800000"}, {pos:0.6, color:"#ff4500"}, {pos:0.8, color:"#ffcc00"}, {pos:1, color:"#ffffaa"}] },
+    wood: { noiseType: 'value', scale: 15, octaves: 2, persistence: 0.7, turbStrength: 20, turbScale: 150, contrast: 1.1, matRoughness: 0.7, matMetalness: 0.0, stops:[{pos:0, color:"#5d4037"}, {pos:0.5, color:"#8d6e63"}, {pos:1, color:"#d7ccc8"}] },
+    water: { noiseType: 'perlin', scale: 100, octaves: 4, persistence: 0.4, ridged: true, turbStrength: 60, turbScale: 80, contrast: 1.0, invert: true, bumpScale: 0.1, matRoughness: 0.1, matMetalness: 0.3, stops:[{pos:0, color:"#001f3f"}, {pos:0.4, color:"#0074d9"}, {pos:0.8, color:"#7fdbff"}, {pos:1, color:"#ffffff"}] },
+    clouds: { noiseType: 'perlin', scale: 80, octaves: 6, persistence: 0.5, contrast: 1.2, brightness: 0.1, bumpScale: 0, matRoughness: 1.0, stops:[{pos:0, color:"#3498db"}, {pos:0.4, color:"#3498db"}, {pos:0.7, color:"#ffffff"}, {pos:1, color:"#ffffff"}] },
+    rust: { noiseType: 'perlin', scale: 40, octaves: 6, persistence: 0.7, turbStrength: 10, contrast: 1.3, matRoughness: 0.8, matMetalness: 0.6, bumpScale: 0.6, stops:[{pos:0, color:"#3e2723"}, {pos:0.4, color:"#bf360c"}, {pos:0.7, color:"#d84315"}, {pos:1, color:"#ffccbc"}] },
+    cells: { noiseType: 'worley', worleyType: 'f2-f1', worleyDist: 'euclidean', scale: 40, octaves: 1, persistence: 0.5, contrast: 2.0, brightness: -0.3, invert: true, matRoughness: 0.2, matMetalness: 0.4, stops:[{pos:0, color:"#000000"}, {pos:0.1, color:"#2ecc71"}, {pos:0.9, color:"#27ae60"}, {pos:1, color:"#000000"}] },
+    ice: { noiseType: 'worley', worleyType: 'f2-f1', worleyDist: 'manhattan', scale: 70, octaves: 1, contrast: 1.5, invert: true, bumpScale: 0.3, matRoughness: 0.1, matMetalness: 0.1, stops:[{pos:0, color:"#ffffff"}, {pos:0.4, color:"#aaddff"}, {pos:1, color:"#004488"}] }
+};
+
+function loadPreset(name) {
+    if(state.uploadedImage) clearImageUpload();
+    if(name === 'custom' || !presets[name]) return;
+    applyStateToUI(presets[name]);
+}
+
+function download() {
+    const btn = document.getElementById('downloadBtn');
+    const originalText = btn.innerText;
+    btn.innerText = "Processing...";
+    
+    // Blob output fixes browser crashing limit for Base64 Strings on 4K/8K images
+    state.canvas.toBlob((blob) => {
+        const link = document.createElement('a');
+        link.download = `tex_${state.inputs.seed.value}_${state.inputs.texWidth.value}x${state.inputs.texHeight.value}.png`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+        btn.innerText = originalText;
+    }, 'image/png');
+}
+
+window.onload = init;
 </script>
-
 </body>
 </html>
