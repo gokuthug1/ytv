@@ -107,14 +107,6 @@
             box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
         }
 
-        .options-row {
-            display: flex;
-            gap: 15px;
-        }
-        .options-row > div {
-            flex: 1;
-        }
-
         /* --- Buttons --- */
         .button-group {
             margin-top: 10px;
@@ -193,31 +185,19 @@
         <label for="youtubeUrl">YouTube URL or Video ID:</label>
         <input type="text" id="youtubeUrl" placeholder="Paste URL or 11-character ID" aria-label="Enter YouTube URL or Video ID" required>
         
-        <div class="options-row">
-            <div>
-                <label for="qualitySelector">Quality:</label>
-                <select id="qualitySelector" aria-label="Select thumbnail quality">
-                    <option value="auto">Auto (Best Available)</option>
-                    <option value="maxresdefault">Max Res (1080p)</option>
-                    <option value="sddefault">Standard (640p)</option>
-                    <option value="hqdefault">High Quality (480p)</option>
-                    <option value="mqdefault">Medium (360p)</option>
-                    <option value="default">Default (120p)</option>
-                </select>
-            </div>
-            <div>
-                <label for="formatSelector">Format:</label>
-                <select id="formatSelector" aria-label="Select thumbnail format">
-                    <option value="jpg">JPG (Standard)</option>
-                    <option value="webp">WebP (Modern)</option>
-                </select>
-            </div>
-        </div>
+        <label for="qualitySelector">Select Thumbnail Quality:</label>
+        <select id="qualitySelector" aria-label="Select thumbnail quality">
+            <option value="auto">Auto (Best Available)</option>
+            <option value="maxresdefault">Max Res (1080p)</option>
+            <option value="sddefault">Standard (640p)</option>
+            <option value="hqdefault">High Quality (480p)</option>
+            <option value="mqdefault">Medium (360p)</option>
+            <option value="default">Default (120p)</option>
+        </select>
 
         <div class="button-group">
             <button type="submit" id="viewButton">View</button>
             <button type="button" id="resetButton">Reset</button>
-            <!-- Restored original button text -->
             <button type="button" id="downloadButton" disabled>Download Thumbnail</button>
         </div>
     </form>
@@ -234,7 +214,6 @@
         form: document.getElementById('thumbnailForm'),
         urlInput: document.getElementById('youtubeUrl'),
         qualitySelector: document.getElementById('qualitySelector'),
-        formatSelector: document.getElementById('formatSelector'),
         viewButton: document.getElementById('viewButton'),
         resetButton: document.getElementById('resetButton'),
         downloadButton: document.getElementById('downloadButton'),
@@ -243,10 +222,11 @@
         messageBox: document.getElementById('messageBox'),
     };
 
+    const THUMBNAIL_BASE_URL = 'https://i.ytimg.com/vi/';
+
     function initialize() {
         ui.form.addEventListener('submit', handleFormSubmit);
         ui.resetButton.addEventListener('click', resetApp);
-        // Restored original event binding
         ui.downloadButton.addEventListener('click', downloadThumbnail);
     }
 
@@ -284,7 +264,8 @@
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
-                if (img.naturalWidth === 120 && img.naturalHeight === 90 && !url.includes('/default.')) {
+                // Ignore the 120x90 placeholder unless the user explicitly requested the "default" (lowest) quality
+                if (img.naturalWidth === 120 && img.naturalHeight === 90 && !url.includes('/default.jpg')) {
                     resolve(false);
                 } else {
                     resolve(true);
@@ -314,7 +295,6 @@
 
         const videoId = extractVideoId(ui.urlInput.value);
         const selectedQuality = ui.qualitySelector.value;
-        const selectedFormat = ui.formatSelector.value;
 
         if (!videoId) {
             showMessage("Please enter a valid YouTube URL or Video ID.");
@@ -323,26 +303,22 @@
             return;
         }
 
-        const baseUrl = selectedFormat === 'webp' 
-            ? 'https://i.ytimg.com/vi_webp/' 
-            : 'https://i.ytimg.com/vi/';
-
         let finalThumbnailUrl = '';
         
         try {
             if (selectedQuality === "auto") {
-                const maxResUrl = `${baseUrl}${videoId}/maxresdefault.${selectedFormat}`;
-                const sdUrl = `${baseUrl}${videoId}/sddefault.${selectedFormat}`;
+                const maxResUrl = `${THUMBNAIL_BASE_URL}${videoId}/maxresdefault.jpg`;
+                const sdUrl = `${THUMBNAIL_BASE_URL}${videoId}/sddefault.jpg`;
                 
                 if (await checkImageValid(maxResUrl)) {
                     finalThumbnailUrl = maxResUrl;
                 } else if (await checkImageValid(sdUrl)) {
                     finalThumbnailUrl = sdUrl;
                 } else {
-                    finalThumbnailUrl = `${baseUrl}${videoId}/hqdefault.${selectedFormat}`;
+                    finalThumbnailUrl = `${THUMBNAIL_BASE_URL}${videoId}/hqdefault.jpg`;
                 }
             } else {
-                const specificUrl = `${baseUrl}${videoId}/${selectedQuality}.${selectedFormat}`;
+                const specificUrl = `${THUMBNAIL_BASE_URL}${videoId}/${selectedQuality}.jpg`;
                 if (["maxresdefault", "sddefault"].includes(selectedQuality) && !(await checkImageValid(specificUrl))) {
                     showMessage(`The '${selectedQuality}' resolution is not available for this video. Try 'Auto'.`);
                     setLoadingState(false);
@@ -372,22 +348,18 @@
 
     /**
      * Generates a descriptive filename for the thumbnail.
-     * Tweak: Now checks if it's jpg or webp to give the correct extension.
      */
     function getFilenameForThumbnail(videoId, imageSrc) {
         let qualityKey = 'thumbnail';
-        let ext = 'jpg';
-        const qualityMatch = imageSrc.match(/\/(\w+default)\.(jpg|webp)$/);
+        const qualityMatch = imageSrc.match(/\/(\w+default)\.jpg$/);
         if (qualityMatch) {
             qualityKey = qualityMatch[1];
-            ext = qualityMatch[2]; // Capture jpg or webp automatically
         }
-        return `${videoId}_${qualityKey}.${ext}`;
+        return `${videoId}_${qualityKey}.jpg`;
     }
 
     /**
-     * RESTORED ORIGINAL DOWNLOAD FUNCTION
-     * Directly downloads the currently displayed thumbnail image using fetch/Blob.
+     * Directly downloads the currently displayed JPG thumbnail.
      */
     async function downloadThumbnail() {
         const videoId = extractVideoId(ui.urlInput.value);
