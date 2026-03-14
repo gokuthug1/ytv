@@ -19,8 +19,8 @@ That’s it.
 - 🎯 **No Sign-Up Required:** Clean, ad-free, and straightforward interface.
 - 🔗 **Universal Link Support:** Works with standard videos, **YouTube Shorts**, **Live Streams**, and mobile (`youtu.be`) links.
 - 🤖 **Smart Auto-Resolution:** Automatically detects and fetches the highest possible quality without returning broken "ghost" placeholders.
-- 🖼️ **Multiple Formats & Sizes:** Choose between modern **WebP** or standard **JPG** formats, and scale from 120p up to 1080p Max Resolution.
-- 🛡️ **CORS-Safe Saving:** Safely bypasses YouTube's strict cross-origin blocks so you can easily save images to your device.
+- 🖼️ **Multiple Sizes:** Scale from standard 120p up to pristine 1080p Max Resolution in universally supported JPG format.
+- ⬇️ **1-Click Direct Download:** Instantly save the exact thumbnail you want directly to your device with a single click.
 
 ---
 
@@ -35,12 +35,12 @@ That’s it.
 
 2. **Paste** it into the input field labeled: `"YouTube URL or Video ID:"`
 
-3. **Tweak** your desired Quality and Format settings (or just leave it on Auto).
+3. **Select** your desired Quality (or just leave it on the default "Auto" for the best available image).
 
-4. **Click "View"**, then use the **"Save Image"** button to open the pristine thumbnail in a new tab where you can right-click/long-press to save it!
+4. **Click "View"**, then use the **"Download Thumbnail"** button to instantly drop the high-res image right into your downloads folder!
 
 ---
 
 # 🔗 Live Demo
 
-👉 **Try it out instantly here:**[gokuthug1.github.io/ytv](https://gokuthug1.github.io/ytv)
+👉 **Try it out instantly here:** [gokuthug1.github.io/ytv](https://gokuthug1.github.io/ytv)
