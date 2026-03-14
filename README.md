@@ -19,7 +19,7 @@ That’s it.
 - 🎯 **No Sign-Up Required:** Clean, ad-free, and straightforward interface.
 - 🔗 **Universal Link Support:** Works with standard videos, **YouTube Shorts**, **Live Streams**, and mobile (`youtu.be`) links.
 - 🤖 **Smart Auto-Resolution:** Automatically detects and fetches the highest possible quality without returning broken "ghost" placeholders.
-- 🖼️ **Multiple Formats & Sizes:** Choose between modern formats, and scale from 120p up to 1080p Max Resolution.
+- 🖼️ **Multiple Formats & Sizes:** Choose between modern **WebP** or standard **JPG** formats, and scale from 120p up to 1080p Max Resolution.
 - 🛡️ **CORS-Safe Saving:** Safely bypasses YouTube's strict cross-origin blocks so you can easily save images to your device.
 
 ---
